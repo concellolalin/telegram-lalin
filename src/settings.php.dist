@@ -1,0 +1,36 @@
+<?php
+return [
+    'settings' => [
+        'displayErrorDetails' => true, // set to false in production
+        'addContentLengthHeader' => false, // Allow the web server to send the content-length header
+
+        // Renderer settings
+        'renderer' => [
+            'templates' => __DIR__ . '/../templates/',
+            'cache' => __DIR__ . '/../cache/',
+        ],
+
+        'db' => [
+            'host' => 'localhost',
+            // 'database' => '',
+            'dsn' => 'mysql:host=localhost;dbname=',
+            'user' => '',
+            'password' => '',
+        ],
+
+        'bot' => [
+            'api_key' => '',
+            'username' => 'Bot',
+            'files' => __DIR__ . '/../public/files',
+        ],
+
+        'token' => '44d96ea07f94bd4014cc4b8ab0886a8a',
+
+        // Monolog settings
+        'logger' => [
+            'name' => 'slim-app',
+            'path' => isset($_ENV['docker']) ? 'php://stdout' : __DIR__ . '/../logs/app.log',
+            'level' => \Monolog\Logger::DEBUG,
+        ],
+    ],
+];

@@ -1,0 +1,6 @@
+/src/settings.php
+/public/files
+/vendor
+/cache
+/logs
+composer.lock
