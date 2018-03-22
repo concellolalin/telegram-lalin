@@ -25,7 +25,8 @@ $app->get('/update/{token}', function (Request $request, Response $response, arr
         return $response->withStatus(403);
     }     
 
-    $renderer = new Tg\TelegramRenderer($this);
+    // TODO: non pasar os par?metros
+    $renderer = new Tg\TelegramRenderer($this, $request);
     $output = $renderer->batch();
 
 

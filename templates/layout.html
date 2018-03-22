@@ -3,10 +3,12 @@
     <head>
         <meta charset="utf-8"/>
         <title>{% block title %}{% endblock %}</title>
-        
-        <link media="all" rel="stylesheet" href="{{ path_for('home') }}/assets/emojis/emoji.css" />
+        {# TODO: cambiar o path_for por baseUrl ou similar #}        
         <link media="all" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" />
         <link media="all" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap-theme.min.css" />
+
+        <link media="all" rel="stylesheet" href="{{ path_for('home') }}/assets/emojis/emoji.css" />
+        <link media="all" rel="stylesheet" href="{{ path_for('home') }}/assets/tg.css" />
     </head>
     <body>
         <div class="container">

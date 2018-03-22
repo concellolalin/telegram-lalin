@@ -3,7 +3,7 @@
 {% block content %}
 <div class="row">
     <div class="col-md-12">
-        <ul>
+        <ul id="messages">
             {% for message in messages %}
             <li>{{ message|raw }}</li>
             {% endfor %}

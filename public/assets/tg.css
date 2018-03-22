@@ -1,0 +1,32 @@
+body {
+    background-color: #eee;
+}
+
+ul#messages {
+    margin: 0;   
+    list-style: none; 
+    padding: 0;
+}
+
+ul#messages > li {
+    margin: 0.4em;
+    padding: 0.5em;
+    border-radius: 10px;
+    border: 1px solid #bbb;
+    background-color: #fff;
+}
+
+ul#messages h1 {
+    font-size: 18px;
+}
+
+ul#messages div.tg-wrapper > a {
+    font-weight: bold;
+    margin-bottom: 0.6em;
+}
+
+ul#messages .tg-url {
+    margin-left: 0.2em;
+    border-left: 2px solid #337ab7;
+    padding-left: 0.4em;
+}

@@ -12,11 +12,14 @@ class TelegramRenderer {
     private $telegram = null;
 
     private $container = null;
+    
+    private $request = null;
 
-    public function __construct($container) {
+    public function __construct($container, $request) {
         $this->container = $container;
         // @var \Longman\TelegramBot\Telegram
         $this->telegram = $this->container->get('telegram'); 
+        $this->request = $request;
     }
 
     public function batch() {
@@ -37,7 +40,11 @@ class TelegramRenderer {
                     $method = 'get' . str_replace('_', '', ucwords($message->getType(), '_'));
 
                     if(method_exists($this, $method)) {
-                        $output[] = $this->$method($message);
+                        $data = $this->$method($message);
+
+                        if($data !== null) {
+                            $output[] = $this->wrap($data);
+                        }
                     } else {
                         die($method);
                     }
@@ -142,27 +149,42 @@ class TelegramRenderer {
         
         $html  = '<div class="tg-url" data-uri="' . $url . '">';        
         $html .= '<h1><a href="' . $url . '">' . $vals['og:title'] . '</a></h1>';
-        $html .= '<a href="' . $url . '"><img src="' . $vals['og:image'] . '" class="img img-responsive" /></a>';
-        $html .= '<p>' . $vals['og:description'] . '</p>';
+        $html .= '<div class="row">';
+            $html .= '<div class="col-md-4">';
+                $html .= '<a href="' . $url . '"><img src="' . $vals['og:image'] . '" class="img img-responsive" /></a>';
+            $html .= '</div>';                  
+            $html .= '<div class="col-md-8">';
+                $html .= '<p>' . $vals['og:description'] . '</p>';
+            $html .= '</div>';      
+        $html .= '</div>';
+        $html .= '<a href="' . $url . '" class="btn btn-default btn-sm btn-block">Ler máis</a>';
         $html .= '</div>';        
         
         return $html;
     }
 
     private function getPhoto($message) {
+        $photo = null;
         if(($photos=$message->getPhoto()) !== null) {
             $file_id = $photos[2]->file_id;
             $response2 = \Longman\TelegramBot\Request::getFile(['file_id' => $file_id]);
             if ($response2->isOk()) {
                 /** @var File $photo_file */
-                $photo_file = $response2->getResult();
-                var_dump($photo_file->getFilePath());die();
+                $photo_file = $response2->getResult();                
                 \Longman\TelegramBot\Request::downloadFile($photo_file);
+
+                // FIXME: ollo ao path
+                $imgSrc = $this->request->getUri()->getBasePath() . '/files/' . $photo_file->getFilePath();
+                $photo = '<a href="' . $imgSrc . '" target="_top">';
+                $photo .= '<img src="' . $imgSrc . '" class="img img-responsive" /></a>';
             }
         }
+        return $photo;
     }
 
     private function wrap($html) {
-        // TODO: empregar 
+        $wrapper = '<div class="tg-wrapper"><a href="https://telegram.me/culturalalin">Cultura Lalín</a><div>%s</div></div>';
+        
+        return sprintf($wrapper, $html);
     }
 }
