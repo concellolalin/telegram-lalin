@@ -1,7 +1,13 @@
-<ul>
-    <li>Proba</li>
-    <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Ea qui ut autem repudiandae eaque fuga quidem nam! Sequi, a, nisi ut asperiores laudantium nihil architecto est sit ab cumque repellendus.</li>
-    <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Modi fugit unde distinctio nam quod vitae aspernatur, minus eligendi exercitationem, consequuntur, nesciunt obcaecati dicta laudantium sint ex ipsam. Ducimus, explicabo deleniti?
-    Debitis suscipit vero assumenda magni accusantium. Architecto similique voluptates provident voluptate dolorem quod maxime dolorum dicta blanditiis aut, est impedit saepe accusamus quisquam consequatur voluptatibus cupiditate ratione ab culpa debitis?
-    Vero, blanditiis? Voluptatibus vel saepe atque, animi possimus, soluta quasi voluptate tenetur corrupti reprehenderit cum est repellat nobis quos nostrum quia! A magnam fuga quae hic sequi sit, ipsam officiis!</li>
-</ul>
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <ul>
+            {% for message in messages %}
+            <li>{{ message|raw }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

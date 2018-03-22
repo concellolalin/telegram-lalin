@@ -58,11 +58,6 @@ class TelegramRenderer {
         } catch (Longman\TelegramBot\Exception\TelegramException $e) {
 
         }    
-
-        foreach($output as $message) {
-            echo $message;
-        }
-        die();
         
         return $output;
     }
@@ -93,7 +88,7 @@ class TelegramRenderer {
         if(isset($matches[1])) {
             $url = $matches[1];
             // Eliminar entidades HTML
-            $url = preg_replace('/&#\d+;/', '', $url);
+            $url = mb_ereg_replace('(&#[0-9]+;|\s).*?$', '', $url);
 
             $client = new \GuzzleHttp\Client([
                 'verify' => false,
@@ -117,15 +112,24 @@ class TelegramRenderer {
             }*/
             $body = (string)$response->getBody();
             
-            $urlRendered = $this->getOpenGraph($body);
+            $urlRendered = $this->getOpenGraph($body, $url);
             $text = preg_replace('@' . preg_quote($url, '@') . '@', '', $text);
+
+            $text = $this->uri2html($text);
             $text .= $urlRendered;
         }
 
         return $text;
     }
 
-    private function getOpenGraph($body) {
+    private function uri2html($body) {
+        $regexp = '/([^"\'])(http[s]?:\/\/[^\s]+)/';
+        $body = preg_replace($regexp, '\1<a href="\2">\2</a>', $body);
+
+        return $body;
+    }
+
+    private function getOpenGraph($body, $url) {
         $keys = ['og:title', 'og:description', 'og:image'];
         $vals = [];
 
@@ -136,9 +140,9 @@ class TelegramRenderer {
             $vals[$matches[1][$i]] = $matches[2][$i]; 
         }
         
-        $html  = '<div class="tg-url">';        
-        $html .= '<h1>' . $vals['og:title'] . '</h1>';
-        $html .= '<img src="' . $vals['og:image'] . '" class="img img-responsive" />';
+        $html  = '<div class="tg-url" data-uri="' . $url . '">';        
+        $html .= '<h1><a href="' . $url . '">' . $vals['og:title'] . '</a></h1>';
+        $html .= '<a href="' . $url . '"><img src="' . $vals['og:image'] . '" class="img img-responsive" /></a>';
         $html .= '<p>' . $vals['og:description'] . '</p>';
         $html .= '</div>';        
         

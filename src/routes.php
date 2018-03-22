@@ -12,7 +12,7 @@ $app->get('/', function (Request $request, Response $response, array $args) {
     $messages = [];
 
     return $this->view->render($response, 'messages.html', ['messages' => $messages]);
-})->setName('messages');
+})->setName('home');
 
 // Recuperar as actualizacións
 // TODO: non renderizar nada 
@@ -26,7 +26,8 @@ $app->get('/update/{token}', function (Request $request, Response $response, arr
     }     
 
     $renderer = new Tg\TelegramRenderer($this);
-    $renderer->batch();
+    $output = $renderer->batch();
+
 
     // if ($server_response->isOk()) {
     //     $update_count = count($server_response->getResult());
@@ -36,13 +37,12 @@ $app->get('/update/{token}', function (Request $request, Response $response, arr
     //     echo $server_response->printError();
     // }
 
-    return $response->withJson([
-        'result' => true
-    ]);
-
-    // return $this->view->render($response, 'update.html', [
-    //     'botname' => $args['botname'],
-    //     'token' => $args['token'],
+    // return $response->withJson([
+    //     'output' => $output
     // ]);
+
+    return $this->view->render($response, 'messages.html', [
+        'messages' => $output,
+    ]);
 })->setName('update');
 
