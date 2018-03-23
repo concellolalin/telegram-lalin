@@ -29,6 +29,8 @@ $app->get('/update/{token}', function (Request $request, Response $response, arr
     $renderer = new Tg\TelegramRenderer($this, $request);
     $output = $renderer->batch();
 
+    // TODO: mellorar conectividade coa base de datos
+    // TODO: meter no c?digo do telegramrenderer
     $dbCfg = $this->get('settings')['db'];
 
     $db = new PDO($dbCfg['dsn'], $dbCfg['user'], $dbCfg['password']);
@@ -36,7 +38,7 @@ $app->get('/update/{token}', function (Request $request, Response $response, arr
     $statement = $db->prepare($sql);
 
     foreach($output as $message) {
-        $statement->execue([
+        $statement->execute([
             ':id' => $message['message']->message_id,
             ':username' => $message['message']->chat['username'],
             ':title' => $message['message']->chat['title'],
