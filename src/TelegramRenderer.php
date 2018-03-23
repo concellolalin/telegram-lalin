@@ -35,32 +35,33 @@ class TelegramRenderer {
             }            
     
             foreach($result as $update) {
+                // Só proceso mesaxes enviadas a unha canle
                 if('channel_post' === $update->getUpdateType()) {
                     $message = $update->getUpdateContent();
-                    $method = 'get' . str_replace('_', '', ucwords($message->getType(), '_'));
+
+                    // TODO: facer o filtrado dende a consulta a base de datos
+                    /*$condition =  \in_array($message->chat['username'], ['ProbasCultura', 'CulturaLalin']);
+                    if(!$condition) {
+                        continue;
+                    }*/
+
+                    $type = $message->getType();
+                    $method = 'get' . str_replace('_', '', ucwords($type, '_'));
 
                     if(method_exists($this, $method)) {
                         $data = $this->$method($message);
 
                         if($data !== null) {
-                            $output[] = $this->wrap($data);
+                            $output[] = [
+                                'html' => $this->wrap($data, $message),
+                                'message' => $message,
+                            ];
                         }
                     } else {
                         die($method);
                     }
                 }
-                // if('channel_post' === $update->getUpdateType()) {
 
-                //     if(($photos=$update->getUpdateContent()->getPhoto()) !== null) {
-                //         $file_id = $photos[2]->file_id;
-                //         $response2 = \Longman\TelegramBot\Request::getFile(['file_id' => $file_id]);
-                //         if ($response2->isOk()) {
-                //             /** @var File $photo_file */
-                //             $photo_file = $response2->getResult();
-                //             \Longman\TelegramBot\Request::downloadFile($photo_file);
-                //         }
-                //     }
-                // }
             }
         } catch (Longman\TelegramBot\Exception\TelegramException $e) {
 
@@ -143,22 +144,26 @@ class TelegramRenderer {
         $matches = [];
         preg_match_all('/<meta[ ]+property="(og:title|og:description|og:image)"[ ]+content="(.*?)"/i', $body, $matches);
 
-        for($i=0; $i<count($matches[1]); $i++) {
-            $vals[$matches[1][$i]] = $matches[2][$i]; 
-        }
-        
-        $html  = '<div class="tg-url" data-uri="' . $url . '">';        
-        $html .= '<h1><a href="' . $url . '">' . $vals['og:title'] . '</a></h1>';
-        $html .= '<div class="row">';
-            $html .= '<div class="col-md-4">';
-                $html .= '<a href="' . $url . '"><img src="' . $vals['og:image'] . '" class="img img-responsive" /></a>';
-            $html .= '</div>';                  
-            $html .= '<div class="col-md-8">';
-                $html .= '<p>' . $vals['og:description'] . '</p>';
-            $html .= '</div>';      
-        $html .= '</div>';
-        $html .= '<a href="' . $url . '" class="btn btn-default btn-sm btn-block">Ler máis</a>';
-        $html .= '</div>';        
+        if(isset($matches[1]) && count($matches[1]) > 0) {
+            for($i=0; $i<count($matches[1]); $i++) {
+                $vals[$matches[1][$i]] = $matches[2][$i]; 
+            }
+            
+            $html  = '<div class="tg-url" data-uri="' . $url . '">';        
+            $html .= '<h1><a href="' . $url . '">' . $vals['og:title'] . '</a></h1>';
+            $html .= '<div class="row">';
+                $html .= '<div class="col-md-4">';
+                    $html .= '<a href="' . $url . '"><img src="' . $vals['og:image'] . '" class="img img-responsive" /></a>';
+                $html .= '</div>';                  
+                $html .= '<div class="col-md-8">';
+                    $html .= '<p>' . $vals['og:description'] . '</p>';
+                $html .= '</div>';      
+            $html .= '</div>';
+            $html .= '<a href="' . $url . '" class="btn btn-default btn-sm btn-block">Ler máis</a>';
+            $html .= '</div>';
+        } else {
+            $html = '<a href="' . $url . '">' . $url . '</a>';
+        }        
         
         return $html;
     }
@@ -181,10 +186,18 @@ class TelegramRenderer {
         }
         return $photo;
     }
-
-    private function wrap($html) {
-        $wrapper = '<div class="tg-wrapper"><a href="https://telegram.me/culturalalin">Cultura Lalín</a><div>%s</div></div>';
+    
+    private function wrap($html, $message) {
+        $wrapper = '<div class="tg-wrapper %s"><a href="https://telegram.me/%s" class="channel">%s</a><div>%s</div><div class="date">%s</div></div>';
         
-        return sprintf($wrapper, $html);
+        return sprintf(
+            $wrapper, 
+            $message->getType(),
+            $message->chat['username'],
+            $message->chat['title'],
+            $html,
+            date('H:i', $message->date)
+        );
     }
+
 }

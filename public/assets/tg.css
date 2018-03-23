@@ -9,18 +9,40 @@ ul#messages {
 }
 
 ul#messages > li {
-    margin: 0.4em;
-    padding: 0.5em;
+    margin: 0.4em;   
+    padding: 0; 
     border-radius: 10px;
     border: 1px solid #bbb;
     background-color: #fff;
+    overflow: hidden;
+}
+
+ul#messages > li.date {
+    border: 0;
+    text-align: center;
+    background-color: transparent;
+}
+
+ul#messages > li.date div {
+    display: inline-block;
+    margin: 0 auto;
+    padding: 0.2em;
+    color: #fff;
+    background-color: rgba(0, 0, 0, 0.4);
+    padding: 0.2em 0.4em;
+    border-radius: 10px;    
 }
 
 ul#messages h1 {
     font-size: 18px;
 }
 
-ul#messages div.tg-wrapper > a {
+ul#messages div.tg-wrapper {
+    position: relative;
+    padding: 0.5em;
+}
+
+ul#messages div.tg-wrapper a.channel {
     font-weight: bold;
     margin-bottom: 0.6em;
 }
@@ -29,4 +51,41 @@ ul#messages .tg-url {
     margin-left: 0.2em;
     border-left: 2px solid #337ab7;
     padding-left: 0.4em;
+}
+
+ul#messages div.tg-wrapper .date {
+    text-align: right;
+    color: #ccc;
+}
+
+ul#messages div.tg-wrapper.photo a.channel {
+    display: none;
+}
+
+ul#messages div.tg-wrapper.photo {
+    padding: 0;        
+}
+
+ul#messages div.tg-wrapper.photo img {
+    padding: 0;
+    margin: 0;
+    border: 0;    
+}
+
+ul#messages div.tg-wrapper.photo .date {        
+    position: absolute;
+    bottom: 0.2em;
+    right: 0.2em;
+    float: right;
+    color: #fff;
+    background-color: rgba(0, 0, 0, 0.4);
+    padding: 0.2em 0.4em;
+    border-radius: 10px;
+
+    opacity: 0;
+    transition:opacity 0.5s ease-in;    
+}
+
+ul#messages div.tg-wrapper.photo:hover .date {        
+    opacity: 1;    
 }

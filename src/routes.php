@@ -29,18 +29,24 @@ $app->get('/update/{token}', function (Request $request, Response $response, arr
     $renderer = new Tg\TelegramRenderer($this, $request);
     $output = $renderer->batch();
 
+    $dbCfg = $this->get('settings')['db'];
 
-    // if ($server_response->isOk()) {
-    //     $update_count = count($server_response->getResult());
-    //     echo date('Y-m-d H:i:s', time()) . ' - Processed ' . $update_count . ' updates';
-    // } else {
-    //     echo date('Y-m-d H:i:s', time()) . ' - Failed to fetch updates' . PHP_EOL;
-    //     echo $server_response->printError();
-    // }
+    $db = new PDO($dbCfg['dsn'], $dbCfg['user'], $dbCfg['password']);
+    $sql = 'INSERT INTO message_rendered (`message_id`, `chat_username`, `chat_title`, `date`, `html`) VALUES (:id, :username, :title, :date, :html)';
+    $statement = $db->prepare($sql);
 
-    // return $response->withJson([
-    //     'output' => $output
-    // ]);
+    foreach($output as $message) {
+        $statement->execue([
+            ':id' => $message['message']->message_id,
+            ':username' => $message['message']->chat['username'],
+            ':title' => $message['message']->chat['title'],
+            ':date' => $message['message']->date,
+            ':html' => $message['html'],
+        ]);
+    }
+
+    $statement = null;
+    $db = null;
 
     return $this->view->render($response, 'messages.html', [
         'messages' => $output,
