@@ -35,7 +35,7 @@ class TelegramRenderer {
             }            
     
             foreach($result as $update) {
-                // Só proceso mesaxes enviadas a unha canle
+                // Sรณ proceso mesaxes enviadas a unha canle
                 if('channel_post' === $update->getUpdateType()) {
                     $message = $update->getUpdateContent();
 
@@ -148,24 +148,40 @@ class TelegramRenderer {
             for($i=0; $i<count($matches[1]); $i++) {
                 $vals[$matches[1][$i]] = $matches[2][$i]; 
             }
+
+            // Converter a codificación a UTF-8
+            $title       = $this->toUtf8($vals['og:title']);
+            $description = $this->toUtf8($vals['og:description']);
             
             $html  = '<div class="tg-url" data-uri="' . $url . '">';        
-            $html .= '<h1><a href="' . $url . '">' . $vals['og:title'] . '</a></h1>';
-            $html .= '<div class="row">';
-                $html .= '<div class="col-md-4">';
-                    $html .= '<a href="' . $url . '"><img src="' . $vals['og:image'] . '" class="img img-responsive" /></a>';
-                $html .= '</div>';                  
-                $html .= '<div class="col-md-8">';
-                    $html .= '<p>' . $vals['og:description'] . '</p>';
-                $html .= '</div>';      
-            $html .= '</div>';
-            $html .= '<a href="' . $url . '" class="btn btn-default btn-sm btn-block">Ler máis</a>';
+            $html .= '<h1><a href="' . $url . '">' . $title . '</a></h1>';
+
+            if(isset($vals['og:image'])) {
+                $html .= '<div class="row">';
+                    $html .= '<div class="col-md-4">';
+                        $html .= '<a href="' . $url . '"><img src="' . $vals['og:image'] . '" class="img img-responsive" /></a>';
+                    $html .= '</div>';                  
+                    $html .= '<div class="col-md-8">';
+                        $html .= '<p>' . $description . '</p>';
+                    $html .= '</div>';      
+                $html .= '</div>';
+            }
+
+            $html .= '<a href="' . $url . '" class="btn btn-default btn-sm btn-block">Ler m&aacute;is</a>';
             $html .= '</div>';
         } else {
             $html = '<a href="' . $url . '">' . $url . '</a>';
         }        
         
         return $html;
+    }
+
+    private function toUtf8($str) {
+        if(\mb_detect_encoding($str, 'UTF-8', true) === false) {
+            $str = \utf8_encode($str);
+        }
+
+        return $str;
     }
 
     private function getPhoto($message) {
@@ -180,8 +196,9 @@ class TelegramRenderer {
 
                 // FIXME: ollo ao path
                 $imgSrc = $this->request->getUri()->getBasePath() . '/files/' . $photo_file->getFilePath();
-                $photo = '<a href="' . $imgSrc . '" target="_top">';
-                $photo .= '<img src="' . $imgSrc . '" class="img img-responsive" /></a>';
+                $photo  = '<a href="' . $imgSrc . '" target="_top">';
+                $photo .= '<img src="' . $imgSrc . '" class="img img-responsive" />';
+                $photo .= '</a>';
             }
         }
         return $photo;

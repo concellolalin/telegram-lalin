@@ -12,19 +12,20 @@ return [
 
         'db' => [
             'host' => 'localhost',
-            // 'database' => '',
-            'dsn' => 'mysql:host=localhost;dbname=',
-            'user' => '',
-            'password' => '',
+            'database' => 'dbname',
+            'dsn' => 'mysql:host=localhost;dbname=dbname',
+            'user' => 'user',
+            'password' => 'pass',
         ],
 
         'bot' => [
-            'api_key' => '',
-            'username' => 'Bot',
+            'api_key' => '...',
+            'username' => '...Bot',
             'files' => __DIR__ . '/../public/files',
+            'channels_allow' => ['nomecanle', ]
         ],
 
-        'token' => '44d96ea07f94bd4014cc4b8ab0886a8a',
+        'token' => '...',
 
         // Monolog settings
         'logger' => [
