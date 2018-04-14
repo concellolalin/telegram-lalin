@@ -39,12 +39,6 @@ class TelegramRenderer {
                 if('channel_post' === $update->getUpdateType()) {
                     $message = $update->getUpdateContent();
 
-                    // TODO: facer o filtrado dende a consulta a base de datos
-                    /*$condition =  \in_array($message->chat['username'], ['ProbasCultura', 'CulturaLalin']);
-                    if(!$condition) {
-                        continue;
-                    }*/
-
                     $type = $message->getType();
                     $method = 'get' . str_replace('_', '', ucwords($type, '_'));
 
@@ -66,8 +60,79 @@ class TelegramRenderer {
         } catch (Longman\TelegramBot\Exception\TelegramException $e) {
 
         }    
+
+        // Gardar na base de datos para amosar despois
+        if(count($output) > 0) {
+            $this->save2db($output);
+        }
         
         return $output;
+    }
+
+    public function getTitle($channel) {
+        $dbCfg = $this->container->get('settings')['db'];
+
+        $db = new \PDO($dbCfg['dsn'], $dbCfg['user'], $dbCfg['password']);
+        $sql = 'SELECT `title` FROM chat WHERE LOWER(`username`) LIKE LOWER(:username) LIMIT 0, 1';
+
+        $statement = $db->prepare($sql);
+        $statement->execute([
+            ':username' => $channel,
+        ]);
+
+        $title = $statement->fetch();
+
+        $statement = null;
+        $db = null;
+
+        return utf8_encode($title['title']);
+    }
+
+    public function getMessages($channel) {
+        $messages = [];
+
+        $dbCfg = $this->container->get('settings')['db'];
+
+        $db = new \PDO($dbCfg['dsn'], $dbCfg['user'], $dbCfg['password']);
+        $sql = 'SELECT `message_id`, `chat_username` AS username, `chat_title` AS title, `date`, `html` ' . 
+            'FROM message_rendered WHERE LOWER(`chat_username`) LIKE LOWER(:username) ' .
+            'ORDER BY `date`, `message_id` ' . 
+            'LIMIT 0, 20';
+
+        $statement = $db->prepare($sql);
+        $statement->execute([
+            ':username' => $channel,
+        ]);
+
+        $messages = $statement->fetchAll();        
+
+        $statement = null;
+        $db = null;
+
+        return $messages;
+    }
+
+    private function save2db($output) {
+        // TODO: mellorar conectividade coa base de datos
+        // TODO: meter no c?digo do telegramrenderer
+        $dbCfg = $this->container->get('settings')['db'];
+
+        $db = new \PDO($dbCfg['dsn'], $dbCfg['user'], $dbCfg['password']);
+        $sql = 'REPLACE INTO message_rendered (`message_id`, `chat_username`, `chat_title`, `date`, `html`) VALUES (:id, :username, :title, :date, :html)';
+        $statement = $db->prepare($sql);
+
+        foreach($output as $message) {            
+            $statement->execute([
+                ':id' => $message['message']->message_id,
+                ':username' => \strtolower($message['message']->chat['username']),
+                ':title' => $message['message']->chat['title'],
+                ':date' => date('Y-m-d H:i:s', $message['message']->date),
+                ':html' => $message['html'],
+            ]);
+        }
+
+        $statement = null;
+        $db = null;
     }
 
     private function getText($message) {
@@ -150,19 +215,19 @@ class TelegramRenderer {
             }
             
             $html  = '<div class="tg-url" data-uri="' . $url . '">';        
-            $html .= '<h1><a href="' . $url . '">' . $vals['og:title'] . '</a></h1>';
+            $html .= '<h1><a href="' . $url . '" target="_top">' . $vals['og:title'] . '</a></h1>';
             $html .= '<div class="row">';
                 $html .= '<div class="col-md-4">';
-                    $html .= '<a href="' . $url . '"><img src="' . $vals['og:image'] . '" class="img img-responsive" /></a>';
+                    $html .= '<a href="' . $url . '" target="_top"><img src="' . $vals['og:image'] . '" class="img img-responsive" /></a>';
                 $html .= '</div>';                  
                 $html .= '<div class="col-md-8">';
                     $html .= '<p>' . $vals['og:description'] . '</p>';
                 $html .= '</div>';      
             $html .= '</div>';
-            $html .= '<a href="' . $url . '" class="btn btn-default btn-sm btn-block">Ler máis</a>';
+            $html .= '<a href="' . $url . '" class="btn btn-default btn-sm btn-block" target="_top">Ler máis</a>';
             $html .= '</div>';
         } else {
-            $html = '<a href="' . $url . '">' . $url . '</a>';
+            $html = '<a href="' . $url . '" target="_top">' . $url . '</a>';
         }        
         
         return $html;
@@ -170,8 +235,15 @@ class TelegramRenderer {
 
     private function getPhoto($message) {
         $photo = null;
+        $username = \strtolower($message->chat['username']);
+        $bot = $this->container->get('settings')['bot'];
+
         if(($photos=$message->getPhoto()) !== null) {
             $file_id = $photos[2]->file_id;
+
+            // Cada photo coa súa canle
+            $this->telegram->setDownloadPath($bot['files'] . '/' . $username);
+
             $response2 = \Longman\TelegramBot\Request::getFile(['file_id' => $file_id]);
             if ($response2->isOk()) {
                 /** @var File $photo_file */
@@ -179,7 +251,7 @@ class TelegramRenderer {
                 \Longman\TelegramBot\Request::downloadFile($photo_file);
 
                 // FIXME: ollo ao path
-                $imgSrc = $this->request->getUri()->getBasePath() . '/files/' . $photo_file->getFilePath();
+                $imgSrc = $this->request->getUri()->getBasePath() . '/files/' . $username . '/' . $photo_file->getFilePath();
                 $photo = '<a href="' . $imgSrc . '" target="_top">';
                 $photo .= '<img src="' . $imgSrc . '" class="img img-responsive" /></a>';
             }
@@ -188,12 +260,12 @@ class TelegramRenderer {
     }
     
     private function wrap($html, $message) {
-        $wrapper = '<div class="tg-wrapper %s"><a href="https://telegram.me/%s" class="channel">%s</a><div>%s</div><div class="date">%s</div></div>';
+        $wrapper = '<div class="tg-wrapper %s"><a href="https://telegram.me/%s" class="channel" target="_top">%s</a><div>%s</div><div class="date">%s</div></div>';
         
         return sprintf(
             $wrapper, 
             $message->getType(),
-            $message->chat['username'],
+            \strtolower($message->chat['username']),
             $message->chat['title'],
             $html,
             date('H:i', $message->date)

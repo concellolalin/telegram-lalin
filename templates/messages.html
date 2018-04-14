@@ -1,20 +1,40 @@
 {% extends "layout.html" %}
 
+{% block title %}{{ title }}{% endblock %}
+
+{% block width %}{{ width|default('400') }}{% endblock %}
+
 {% block content %}
 <div class="row">
     <div class="col-md-12">
         <ul id="messages">
             {% set curDate = '' %}
             {% for message in messages %}
-                {% if message.message.date != curDate %}
+                {% if message.date != curDate %}
                     <li class="date">
-                        <div>{{ message.message.date|date("d/m/Y") }}</div>
+                        <div>{{ message.date|date("d/m/Y") }}</div>
                     </li>
-                    {% set curDate = message.message.date %}
+                    {% set curDate = message.date %}
                 {% endif %}
                 <li>{{ message.html|raw }}</li>
+            {% else %}
+                <li class="advise">Sen mensaxes publicados polo momento.</li>
             {% endfor %}
         </ul>
     </div>
 </div>
 {% endblock %}
+
+{% block customJs %}
+<a id="bottom"></a>
+
+<script type="text/javascript">
+/*<![CDATA[*/
+$(document).ready(function (){       
+    $('html, body').animate({
+        scrollTop: $("#bottom").offset().top
+    }, 1000);
+});    
+/* ]]> */
+</script>
+{% endblock %}         

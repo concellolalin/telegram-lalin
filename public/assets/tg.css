@@ -89,3 +89,8 @@ ul#messages div.tg-wrapper.photo .date {
 ul#messages div.tg-wrapper.photo:hover .date {        
     opacity: 1;    
 }
+
+ul#messages li.advise {
+    padding: 0.5em;
+    font-weight: bold;
+}

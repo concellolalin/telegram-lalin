@@ -9,13 +9,36 @@ $app->get('/', function (Request $request, Response $response, array $args) {
     // Sample log message
     //$this->logger->info("Slim-Skeleton '/' route");
 
-    $messages = [];
-
-    return $this->view->render($response, 'messages.html', ['messages' => $messages]);
+    return $response->withStatus(403);    
 })->setName('home');
 
+
+$app->get('/messages/{channel}[/{width}]', function (Request $request, Response $response, array $args) {
+    $bot = $this->get('settings')['bot'];
+    $channel = $args['channel'];
+    if(!\in_array($channel, $bot['channels_allow'])) {
+        return $response->withStatus(403);
+    }     
+
+    $messages = [];
+
+    $renderer = new Tg\TelegramRenderer($this, $request);
+    $messages = $renderer->getMessages($channel);
+    $title = $renderer->getTitle($channel);    
+
+    $values = [
+        'title' => $title,
+        'messages' => $messages,        
+    ];
+
+    if(isset($args['width']) && is_numeric($args['width']) && ($args['width'] > 100 && $args['width'] < 2048)) {
+        $values['width'] = $args['width'];
+    }
+
+    return $this->view->render($response, 'messages.html', $values);
+})->setName('messages');
+
 // Recuperar as actualizacións
-// TODO: non renderizar nada 
 $app->get('/update/{token}', function (Request $request, Response $response, array $args) {
     // Sample log message
     //$this->logger->info("Slim-Skeleton '/' route");
@@ -25,33 +48,10 @@ $app->get('/update/{token}', function (Request $request, Response $response, arr
         return $response->withStatus(403);
     }     
 
-    // TODO: non pasar os par?metros
+    // TODO: non pasar os parámetros
     $renderer = new Tg\TelegramRenderer($this, $request);
     $output = $renderer->batch();
 
-    // TODO: mellorar conectividade coa base de datos
-    // TODO: meter no c?digo do telegramrenderer
-    $dbCfg = $this->get('settings')['db'];
-
-    $db = new PDO($dbCfg['dsn'], $dbCfg['user'], $dbCfg['password']);
-    $sql = 'INSERT INTO message_rendered (`message_id`, `chat_username`, `chat_title`, `date`, `html`) VALUES (:id, :username, :title, :date, :html)';
-    $statement = $db->prepare($sql);
-
-    foreach($output as $message) {
-        $statement->execute([
-            ':id' => $message['message']->message_id,
-            ':username' => $message['message']->chat['username'],
-            ':title' => $message['message']->chat['title'],
-            ':date' => $message['message']->date,
-            ':html' => $message['html'],
-        ]);
-    }
-
-    $statement = null;
-    $db = null;
-
-    return $this->view->render($response, 'messages.html', [
-        'messages' => $output,
-    ]);
+    return $response->withStatus(200);
 })->setName('update');
 
