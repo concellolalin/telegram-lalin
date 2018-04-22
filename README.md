@@ -58,7 +58,7 @@ return [
             'channels_allow' => ['nome_canle1', 'nome_canle2']
         ],
 
-        'token' => 'token_aleatorio_de_valores_para_actualizar',
+        'token' => 'TOKEN-ALEATORIO-CONFIGURADO-NO-SETTINGS.PHP',
 
         // Monolog settings
         'logger' => [
