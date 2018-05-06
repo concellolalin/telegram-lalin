@@ -10,13 +10,18 @@ Contidos soportados:
 * __Imaxes__, ás imaxes son descargadas do servidor de Telegram.
 * __Textos con ligazóns__: da primeira ligazón atopada descárgase a información embebida en tags OpenGraph, tamén a imaxe.
 * __Ligazóns__: descárgase a información embebida en tags OpenGraph xunto coa imaxe asociada.
+* __Audios__ (EXPERIMENTAL), os audios son descargados do servidor de Telegram e engadidos coa tag _audio_.
+* __Vídeos__ (EXPERIMENTAL), os vídeos son descargados do servidor de Telegram e engadidos coa tag _video_. 
 
 
 Contidos PENDENTES (TO-DO):
 
-* __Audios__.
-* __Vídeos__.
+* ~~__Audios__~~.
+* ~~__Vídeos__~~.
 * __Múltiples imaxes agrupadas nun post__.
+* __Notas de voz__
+* Soporte para axustar o ancho do widget
+* Crear estrutura de templates para que os desenvolvedores poidan personalizar a visualización dos post (text, audio, video, link,...).
 
 Se precisas das funcionalidades pendentes reporta unha issue no repositorio do proxecto.
 

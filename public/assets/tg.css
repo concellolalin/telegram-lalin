@@ -94,3 +94,13 @@ ul#messages li.advise {
     padding: 0.5em;
     font-weight: bold;
 }
+
+ul#messages .audio h1, ul#messages .video h1 {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.media-info {
+    text-align: right;
+    color: #ccc;
+}

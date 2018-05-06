@@ -52,7 +52,8 @@ class TelegramRenderer {
                             ];
                         }
                     } else {
-                        die($method);
+                        //die($method);
+                        echo($method . '<br/>');
                     }
                 }
 
@@ -96,7 +97,7 @@ class TelegramRenderer {
         $db = new \PDO($dbCfg['dsn'], $dbCfg['user'], $dbCfg['password']);
         $sql = 'SELECT `message_id`, `chat_username` AS username, `chat_title` AS title, `date`, `html` ' . 
             'FROM message_rendered WHERE LOWER(`chat_username`) LIKE LOWER(:username) ' .
-            'ORDER BY `date`, `message_id` ' . 
+            'ORDER BY `date` DESC, `message_id` DESC ' . 
             'LIMIT 0, 20';
 
         $statement = $db->prepare($sql);
@@ -104,7 +105,8 @@ class TelegramRenderer {
             ':username' => $channel,
         ]);
 
-        $messages = $statement->fetchAll();        
+        $messages = $statement->fetchAll();     
+        $messages = array_reverse($messages);   
 
         $statement = null;
         $db = null;
@@ -114,7 +116,7 @@ class TelegramRenderer {
 
     private function save2db($output) {
         // TODO: mellorar conectividade coa base de datos
-        // TODO: meter no c?digo do telegramrenderer
+        // TODO: meter no código do telegramrenderer
         $dbCfg = $this->container->get('settings')['db'];
 
         $db = new \PDO($dbCfg['dsn'], $dbCfg['user'], $dbCfg['password']);
@@ -273,6 +275,99 @@ class TelegramRenderer {
             }
         }
         return $photo;
+    }
+
+    private function getAudio($message) {
+        $html = null;
+        $username = \strtolower($message->chat['username']);
+        $bot = $this->container->get('settings')['bot'];
+        
+        if(($audio=$message->getAudio()) !== null) {
+            $file_id = $audio->getFileId();
+
+            // Cada audio coa súa canle
+            $this->telegram->setDownloadPath($bot['files'] . '/' . $username);
+
+            $response2 = \Longman\TelegramBot\Request::getFile(['file_id' => $file_id]);
+            if ($response2->isOk()) {
+                /** @var File $audio_file */
+                $audio_file = $response2->getResult();                
+                \Longman\TelegramBot\Request::downloadFile($audio_file);
+
+                $title = $audio->getTitle();
+
+                // FIXME: ollo ao path
+                $imgSrc = $this->request->getUri()->getBasePath() . '/files/' . $username . '/' . $audio_file->getFilePath();
+                $html  = '<div class="audio">';
+                if( strlen(trim($title)) > 0 ) {
+                    $html .= '<h1>' . $title . '</h1>'; 
+                }
+                $html .= '<audio class="width" src="' . $imgSrc . '" controls="controls">';
+                $html .= '</audio>';
+                $html .= '<p class="media-info">' . $this->formatTime($audio->getDuration()) . ', ' . $this->formatSizeUnits($audio->getFileSize()) . '</p>';
+                $html .= '</div>';
+            }
+        }
+        return $html;
+    }
+
+    private function getVideo($message) {
+        $html = null;
+        $username = \strtolower($message->chat['username']);
+        $bot = $this->container->get('settings')['bot'];
+        
+        if(($video=$message->getVideo()) !== null) {
+            $file_id = $video->getFileId();
+
+            // Cada audio coa súa canle
+            $this->telegram->setDownloadPath($bot['files'] . '/' . $username);
+
+            $response2 = \Longman\TelegramBot\Request::getFile(['file_id' => $file_id]);
+            if ($response2->isOk()) {
+                /** @var File $video_file */
+                $video_file = $response2->getResult();                
+                \Longman\TelegramBot\Request::downloadFile($video_file);
+
+                $title = $video->getTitle();
+
+                // FIXME: ollo ao path
+                $imgSrc = $this->request->getUri()->getBasePath() . '/files/' . $username . '/' . $video_file->getFilePath();
+                $html  = '<div class="video">';
+                if( strlen(trim($title)) > 0 ) {
+                    $html .= '<h1>' . $title . '</h1>'; 
+                }
+                $html .= '<video class="width" src="' . $imgSrc . '" controls="controls">';
+                $html .= '</video>';
+                $html .= '<p class="media-info">' . $this->formatTime($video->getDuration()) . ', ' . $this->formatSizeUnits($video->getFileSize()) . '</p>';
+                $html .= '</div>';
+            }
+        }
+        return $html;
+    }
+
+    private function formatTime($seconds) {
+        if(floor($seconds / 3600) <= 0) {
+            return gmdate("i:s", $seconds % 3600);
+        }
+        return floor($seconds / 3600) . gmdate(":i:s", $seconds % 3600);
+    }
+
+    private function formatSizeUnits($bytes) {
+        if ($bytes >= 1073741824) {
+            $bytes = number_format($bytes / 1073741824, 2) . ' GB';
+        } elseif ($bytes >= 1048576) {
+            $bytes = number_format($bytes / 1048576, 2) . ' MB';
+        } elseif ($bytes >= 1024) {
+            $bytes = number_format($bytes / 1024, 2) . ' KB';
+        } elseif ($bytes > 1) {
+            $bytes = $bytes . ' bytes';
+        } elseif ($bytes == 1) {
+            $bytes = $bytes . ' byte';
+        } else {
+            $bytes = '0 bytes';
+        }
+
+        return $bytes;
     }
     
     private function wrap($html, $message) {

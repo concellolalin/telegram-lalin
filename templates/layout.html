@@ -12,9 +12,20 @@
 
         <link media="all" rel="stylesheet" href="{{ path_for('home') }}/assets/emojis/emoji.css" />
         <link media="all" rel="stylesheet" href="{{ path_for('home') }}/assets/tg.css" />
+
+        <link rel="stylesheet" href="{{ path_for('home') }}/assets/mediaelement/build/mediaelementplayer.min.css" />
+
         <style>
         .width {
-            max-width: {% block width %}400{% endblock %}px;
+            max-width: {% block width %}400{% endblock %}px;            
+        }
+
+        audio, video {
+            max-width: 480px;
+            max-height: 270px;
+            width: 100%; 
+            height: auto;
+            margin: .1em;
         }
         </style>
     </head>
@@ -25,6 +36,21 @@
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+        <script src="{{ path_for('home') }}/assets/mediaelement/build/mediaelement-and-player.min.js"></script>
+        <script type="text/javascript">
+            $(document).ready(function() {
+                $('audio,video').mediaelementplayer({
+                    videoWidth: 345,
+                    audioWidth: 345,
+                    pluginPath: "{{ path_for('home') }}/assets/mediaelement/build/",
+                    success: function(mediaElement, originalNode, instance) {
+                        // do things
+                    }
+                });
+            });
+        </script>
+
 
         {% block customJs %}{% endblock %}         
     </body>
