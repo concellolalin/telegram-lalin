@@ -61,7 +61,7 @@ return [
             'api_key' => 'api_key_de_bot_father',
             'username' => 'NombreDelBotQueCreamosBot',
             'files' => __DIR__ . '/../public/files',
-            'channels_allow' => ['nombre_canle1', 'nombre_canle2']
+            'channels_allow' => ['nombre_canal1', 'nombre_canal2']
         ],
 
         'token' => 'TOKEN-ALEATORIO-CONFIGURADO-EN-SETTINGS.PHP',
@@ -87,13 +87,13 @@ __NOTA__: el API de telegram también puede recibir las actualizaciones directam
 ## Ejemplo de código iframe
 
 ```html
-<iframe src="http://servidor.com/messages/nome_canle1"
+<iframe src="http://servidor.com/messages/nombre_canal1"
     width="100%" height="400" frameborder="0"></iframe>
 ```
 
 Si necesitamos adaptar el tamaño del contenido podemos establecer en la URL el ancho de los contenidos:
 
 ```html
-<iframe src="http://servidor.com/messages/nome_canle1/350"
+<iframe src="http://servidor.com/messages/nombre_canal1/350"
     width="100%" height="400" frameborder="0"></iframe>
 ```
