@@ -1,5 +1,7 @@
 # Telegram Lalín
 
+[Versión en español](https://github.com/concellolalin/telegram-lalin/blob/master/README.es.md)
+
 Integración das canles de telegram cos servizos web do Concello de Lalín. Widget para incorporar os contidos dunha canle de Telegram nunha web. 
 
 O proxecto emprega como base o framework [slim](https://www.slimframework.com/) e o [API de Telegram para PHP](https://github.com/php-telegram-bot/core).
@@ -33,6 +35,7 @@ Se precisas das funcionalidades pendentes reporta unha issue no repositorio do p
 3. Engadir o bot como administrador da canle da que se desexan recibir as actualizacións
 4. Editar o ficheiro `src/settings.php.dist` e renomealo a `settings.php`. Configurar os valores para a conexión a base de datos, API-KEY de Telegram, nome do bot, nomes das canles das que se aceptan actualizacións, token interno para consultar actualizacións empregando cron, ...
 5. Configurar o cron para que faga `polling` ao servidor de Telegram e reciba as actualización
+6. Integrar no sitio cun iframe coa URL co seguinte patrón: `http://servidor.com/ruta-ao-codigo/messages/nome_canle1`
 
 Exemplo de configuración do ficheiro `settings.php`:
 
@@ -82,4 +85,18 @@ Detalle da liña do cron para facer peticións aos servidores de Telegram na pro
 */15 * * * * wget -O /dev/null http://tg.lalin.gal/update/TOKEN-ALEATORIO-CONFIGURADO-NO-SETTINGS.PHP
 ```
 
-__NOTA__: o API de telegram tamén pode recibir as actualizacións directamente dende Telegram configurando webhooks, porén é preciso que o noso servidor esté configurado para empregar HTTPS. 
+__NOTA__: o API de telegram tamén pode recibir as actualizacións directamente dende Telegram configurando webhooks, porén é preciso que o noso servidor esté configurado para empregar HTTPS.
+
+## Exemplo de código iframe
+
+```html
+<iframe src="http://servidor.com/messages/nome_canle1"
+    width="100%" height="400" frameborder="0"></iframe>
+```
+
+Se precisamos adaptar o tamaño do contido podemos establecer na URL o ancho dos contidos:
+
+```html
+<iframe src="http://servidor.com/messages/nome_canle1/350"
+    width="100%" height="400" frameborder="0"></iframe>
+```
